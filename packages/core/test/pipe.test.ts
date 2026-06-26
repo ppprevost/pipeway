@@ -67,9 +67,63 @@ describe('pipe', () => {
     expect(res.status).toBe(500)
   })
 
+  it('.json serializes a value with a custom default status', async () => {
+    const handler = pipe().json(() => ({ created: true }), 201)
+    const res = await handler(req(), {})
+    expect(res.status).toBe(201)
+    expect(await res.json()).toEqual({ created: true })
+  })
+
+  it('.json defaults to 200 and still passes a Response through', async () => {
+    const ok200 = await pipe().json(() => ({ a: 1 }))(req(), {})
+    expect(ok200.status).toBe(200)
+    const raw = await pipe().json(() => new Response('x', { status: 418 }))(req(), {})
+    expect(raw.status).toBe(418)
+  })
+
   it('exposes params from the runtime adapter', async () => {
     const handler = pipe<{ id: string }>().handle((ctx) => ({ id: ctx.params.id }))
     const res = await handler(req(), { id: 'abc' })
     expect(await res.json()).toEqual({ id: 'abc' })
+  })
+
+  it('.map transforms the context before the handler', async () => {
+    const handler = pipe()
+      .use(() => ok({ name: '  Ada  ' }))
+      .map((ctx) => ({ ...ctx, name: ctx.name.trim() }))
+      .handle((ctx) => ({ name: ctx.name }))
+    const res = await handler(req(), {})
+    expect(await res.json()).toEqual({ name: 'Ada' })
+  })
+
+  it('.catch handles a thrown error via the first matching filter', async () => {
+    const handler = pipe()
+      .catch((err) => (err instanceof RangeError ? new Response('range', { status: 416 }) : null))
+      .catch(() => new Response('fallback', { status: 500 }))
+      .handle(() => {
+        throw new RangeError('x')
+      })
+    const res = await handler(req(), {})
+    expect(res.status).toBe(416)
+    expect(await res.text()).toBe('range')
+  })
+
+  it('.serialize strips fields from a JSON response body', async () => {
+    const handler = pipe()
+      .serialize((body) => {
+        const { password: _pw, ...rest } = body as Record<string, unknown>
+        return rest
+      })
+      .handle(() => ({ id: 1, name: 'Ada', password: 'secret' }))
+    const res = await handler(req(), {})
+    expect(await res.json()).toEqual({ id: 1, name: 'Ada' })
+  })
+
+  it('.serialize leaves a non-JSON response untouched', async () => {
+    const handler = pipe()
+      .serialize(() => ({ tampered: true }))
+      .handle(() => new Response('plain', { status: 200 }))
+    const res = await handler(req(), {})
+    expect(await res.text()).toBe('plain')
   })
 })

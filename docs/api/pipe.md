@@ -96,6 +96,68 @@ pipe()
 Use it for CORS, security headers, timing, logging — anything that touches the
 outgoing response.
 
+## `.map(fn)` {#map}
+
+```ts
+map(fn: (ctx: Ctx) => Ctx | Promise<Ctx>): Pipeline
+```
+
+A **pre-handler context transform**. Runs after all steps, before the handler.
+Same context type in and out — use it to normalize or sanitize.
+
+```ts
+pipe()
+  .use(body(z.object({ email: z.string() })))
+  .map((ctx) => ({ ...ctx, body: { ...ctx.body, email: ctx.body.email.toLowerCase() } }))
+  .handle(({ body }) => ({ email: body.email }))
+```
+
+## `.catch(catcher)` {#catch}
+
+```ts
+catch(catcher: (error: unknown, req: Request) => Response | null | undefined): Pipeline
+```
+
+Registers an **exception filter** (NestJS `@Catch` equivalent). If a step, map,
+handler, or serializer throws, catchers run **in order**; the first to return a
+`Response` wins. Return `null`/`undefined` to pass to the next filter. If none
+handle it, [`onError`](#type-pipeoptions) runs, otherwise the error rethrows.
+
+```ts
+pipe()
+  .catch((err) => (err instanceof NotFoundError ? new Response('Not found', { status: 404 }) : null))
+  .catch((err) => new Response('Internal error', { status: 500 })) // fallback
+  .handle(({ params }) => loadOrThrow(params.id))
+```
+
+Composable filters replace scattered `try/catch`: domain errors map to status
+codes in one place, and the catch-all sits last.
+
+## `.serialize(fn)` {#serialize}
+
+```ts
+serialize(fn: (body: unknown) => unknown): Pipeline
+```
+
+A **post-handler JSON body filter** (a serializer). Runs only on JSON responses;
+anything else passes through. Use it to strip sensitive fields before they leave.
+Multiple serializers chain in order. Status and headers are preserved.
+
+```ts
+pipe()
+  .serialize((body) => {
+    const { passwordHash, ...safe } = body as Record<string, unknown>
+    return safe
+  })
+  .handle(() => getUserRecord()) // { id, name, passwordHash }
+// response body → { id, name }
+```
+
+::: tip Zod serializer
+For schema-driven stripping, run a Zod schema inside `serialize`:
+`.serialize((b) => publicUser.parse(b))`.
+:::
+
 ## `.handle(handler)` {#handle}
 
 ```ts
@@ -121,6 +183,24 @@ const handler = pipe<{}, 'NotFound'>({
   const user = lookup(params)
   return user ? success(user) : failure('NotFound')
 })
+```
+
+## `.json(handler, status?)` {#json}
+
+```ts
+json<T>(handler: (ctx: Ctx) => T | Result<T, E> | Response, status?: number): CompiledHandler<Params>
+```
+
+Like [`.handle()`](#handle), but JSON-serialized values use `status` (default
+`200`). Lets a handler stay pure — return a plain value — while still answering
+`201`/`202`/… declaratively. A returned `Response` still passes through with its
+own status; a `failure(...)` still goes through `onResult`.
+
+```ts
+import { pipe } from 'pipeway'
+
+const createTodo = pipe()
+  .json(({ params }) => ({ id: crypto.randomUUID() }), 201) // → 201 Created
 ```
 
 ## `ok()` / `fail()` {#ok-fail}

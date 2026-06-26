@@ -9,9 +9,13 @@ The core. A pipeline builder and the constructors for its results.
 | Export | Kind | Summary |
 | --- | --- | --- |
 | [`pipe(options?)`](/api/pipe#pipe-fn) | function | Create a pipeline. |
-| [`.use(step)`](/api/pipe#use) | method | Add a step; enriches the typed context. |
+| [`.use(step)`](/api/pipe#use) | method | Add a step (guard); enriches the typed context. |
+| [`.map(fn)`](/api/pipe#map) | method | Pre-handler context transform. |
+| [`.catch(catcher)`](/api/pipe#catch) | method | Exception filter (`@Catch` equivalent). |
+| [`.serialize(fn)`](/api/pipe#serialize) | method | Post-handler JSON body filter (strip fields). |
 | [`.transform(fn)`](/api/pipe#transform) | method | Post-handler Response interceptor. |
 | [`.handle(handler)`](/api/pipe#handle) | method | Terminate the pipeline into a handler. |
+| [`.json(handler, status?)`](/api/pipe#json) | method | Terminate, serializing values with a default status. |
 | [`ok(extra)`](/api/pipe#ok-fail) | function | A step that succeeds, adding `extra` to context. |
 | [`fail(response)`](/api/pipe#ok-fail) | function | A step that short-circuits with a Response. |
 | [`success(value)`](/api/result#success-failure) | function | A successful domain `Result`. |
@@ -41,11 +45,17 @@ Generic, framework-agnostic Zod steps.
 
 ```
 pipe(options)
-  .use(stepA)        // ctx: BaseCtx & A
-  .use(stepB)        // ctx: BaseCtx & A & B   (B may require A — enforced by types)
-  .transform(fn)     // intercept the Response
+  .use(stepA)        // guard → ctx: BaseCtx & A
+  .use(stepB)        // guard → ctx: BaseCtx & A & B  (B may require A — enforced by types)
+  .map(fn)           // pre-handler ctx transform
+  .catch(filter)     // exception filter (@Catch)
+  .serialize(fn)     // post-handler JSON body filter (strip fields)
+  .transform(fn)     // post-handler Response interceptor
   .handle(handler)   // → (req: Request, params) => Promise<Response>
 ```
+
+Execution order: `steps → maps → handler → serializers → transforms`, with
+`catch` filters wrapping the whole run.
 
 A **step** returns `ok(extra)` (continue, merge `extra` into context) or
 `fail(response)` (stop, return that Response). The **handler** returns a value
