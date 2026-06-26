@@ -4,6 +4,9 @@ hero:
   name: pipeway
   text: One handler. Every runtime.
   tagline: A portable, typed request pipeline on Web-standard Request/Response. NestJS lifecycle, zero framework lock-in.
+  image:
+    src: /hero.svg
+    alt: pipeway
   actions:
     - theme: brand
       text: Get started

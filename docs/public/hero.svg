@@ -1,0 +1,32 @@
+<svg width="320" height="320" viewBox="0 0 320 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="hbg" x1="60" y1="50" x2="260" y2="270" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1E1B4B"/>
+      <stop offset="1" stop-color="#0B1020"/>
+    </linearGradient>
+    <linearGradient id="hfg" x1="90" y1="90" x2="230" y2="230" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#22D3EE"/>
+      <stop offset="0.5" stop-color="#6366F1"/>
+      <stop offset="1" stop-color="#A855F7"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="160" cy="160" r="150" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6366F1" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#6366F1" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="soft" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="6"/>
+    </filter>
+  </defs>
+  <circle cx="160" cy="160" r="150" fill="url(#glow)"/>
+  <rect x="70" y="70" width="180" height="180" rx="40" fill="url(#hbg)" stroke="#ffffff" stroke-opacity="0.08"/>
+  <g stroke="url(#hfg)" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" fill="none" filter="url(#soft)" opacity="0.55">
+    <path d="M108 120 L140 160 L108 200" opacity="0.5"/>
+    <path d="M142 120 L174 160 L142 200" opacity="0.8"/>
+    <path d="M176 120 L208 160 L176 200"/>
+  </g>
+  <g stroke="url(#hfg)" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <path d="M108 120 L140 160 L108 200" opacity="0.5"/>
+    <path d="M142 120 L174 160 L142 200" opacity="0.8"/>
+    <path d="M176 120 L208 160 L176 200"/>
+  </g>
+</svg>

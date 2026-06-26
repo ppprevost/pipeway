@@ -1,7 +1,29 @@
-# pipeway
+<p align="center">
+  <img src="docs/public/favicon.svg" width="72" alt="pipeway" />
+</p>
 
-> A portable, typed **request pipeline** on Web-standard `Request`/`Response`.
-> NestJS-style lifecycle (guards · interceptors · serializers), **zero framework lock-in**.
+<h1 align="center">pipeway</h1>
+
+<p align="center">
+  A portable, typed <strong>request pipeline</strong> on Web-standard <code>Request</code>/<code>Response</code>.<br/>
+  NestJS-style lifecycle (guards · interceptors · serializers), <strong>zero framework lock-in</strong>.
+</p>
+
+<p align="center">
+  <a href="https://www.npmjs.com/package/pipeway"><img src="https://img.shields.io/npm/v/pipeway?color=6366f1&label=pipeway" alt="npm" /></a>
+  <a href="https://github.com/ppprevost/pipeway/actions/workflows/ci.yml"><img src="https://github.com/ppprevost/pipeway/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
+  <a href="https://github.com/ppprevost/pipeway/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/pipeway?color=6366f1" alt="MIT" /></a>
+</p>
+
+<p align="center">
+  <strong><a href="https://ppprevost.github.io/pipeway/">📚 Documentation</a></strong>
+  &nbsp;·&nbsp;
+  <a href="https://ppprevost.github.io/pipeway/guide/getting-started">Getting started</a>
+  &nbsp;·&nbsp;
+  <a href="https://ppprevost.github.io/pipeway/api/">API reference</a>
+</p>
+
+---
 
 Runs natively on **Bun · Deno · Cloudflare Workers · Next.js route handlers · Hono**. One thin adapter for **Express / Fastify**.
 

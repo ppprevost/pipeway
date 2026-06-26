@@ -1,0 +1,19 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="pipeway">
+  <defs>
+    <linearGradient id="pw" x1="6" y1="10" x2="58" y2="54" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#22D3EE"/>
+      <stop offset="0.5" stop-color="#6366F1"/>
+      <stop offset="1" stop-color="#A855F7"/>
+    </linearGradient>
+  </defs>
+  <!-- flow: three chevrons, a request moving forward through the pipeline -->
+  <g stroke="url(#pw)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.45">
+    <path d="M12 18 L26 32 L12 46"/>
+  </g>
+  <g stroke="url(#pw)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.75">
+    <path d="M27 18 L41 32 L27 46"/>
+  </g>
+  <g stroke="url(#pw)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <path d="M42 18 L56 32 L42 46"/>
+  </g>
+</svg>

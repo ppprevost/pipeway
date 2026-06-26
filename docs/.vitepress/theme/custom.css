@@ -1,0 +1,80 @@
+:root {
+  --vp-c-brand-1: #6f7dff;
+  --vp-c-brand-2: #6366f1;
+  --vp-c-brand-3: #5457e0;
+  --vp-c-brand-soft: rgba(99, 102, 241, 0.16);
+
+  --pw-grad: linear-gradient(120deg, #22d3ee 0%, #6366f1 50%, #a855f7 100%);
+
+  --vp-home-hero-name-color: transparent;
+  --vp-home-hero-name-background: var(--pw-grad);
+
+  --vp-home-hero-image-background-image: radial-gradient(
+    closest-side,
+    rgba(99, 102, 241, 0.35),
+    rgba(168, 85, 247, 0.12),
+    transparent
+  );
+  --vp-home-hero-image-filter: blur(48px);
+}
+
+.dark {
+  --vp-c-bg: #0b1020;
+  --vp-c-bg-alt: #0e1426;
+  --vp-c-bg-soft: #121a30;
+}
+
+/* Brand button gets the full gradient */
+.VPButton.brand {
+  background: var(--pw-grad);
+  border: none;
+  color: #fff;
+  transition: transform 0.15s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+}
+.VPButton.brand:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 30px -10px rgba(99, 102, 241, 0.6);
+  opacity: 0.96;
+}
+
+/* Hero tagline a touch softer */
+.VPHero .text {
+  max-width: 600px;
+}
+
+/* Feature cards: subtle border that lights up on hover */
+.VPFeature {
+  border: 1px solid var(--vp-c-divider);
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  background: var(--vp-c-bg-soft);
+}
+.VPFeature:hover {
+  border-color: transparent;
+  transform: translateY(-2px);
+  box-shadow:
+    0 0 0 1px rgba(99, 102, 241, 0.5),
+    0 16px 40px -20px rgba(99, 102, 241, 0.5);
+}
+
+/* Inline code + brand accents */
+.vp-doc a {
+  text-decoration-color: var(--vp-c-brand-soft);
+}
+
+/* Nav logo size */
+.VPNavBarTitle .logo {
+  height: 26px;
+}
+
+/* A faint top glow on the home hero */
+.VPHome {
+  position: relative;
+}
+.VPHome::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 480px;
+  pointer-events: none;
+  background: radial-gradient(60% 60% at 50% 0%, rgba(99, 102, 241, 0.16), transparent 70%);
+}
