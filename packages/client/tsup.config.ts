@@ -7,5 +7,5 @@ export default defineConfig({
   clean: true,
   treeshake: true,
   sourcemap: true,
-  external: ['pipeway', '@standard-schema/spec'],
+  external: ['@standard-schema/spec'],
 })

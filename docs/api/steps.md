@@ -1,11 +1,13 @@
 # Steps — `pipeway-steps`
 
-Generic Zod validation steps. Auth and rate-limiting are deliberately **not**
-bundled — they depend on your stack. Write them yourself as plain
+Generic validation steps built on the [Standard Schema](https://standardschema.dev)
+spec — they accept **any** validator that implements it: Zod 3.24+, Valibot,
+ArkType. No lock-in to one library. Auth and rate-limiting are deliberately
+**not** bundled — they depend on your stack. Write them yourself as plain
 [`Step`](/api/pipe#type-step)s (see the examples below).
 
 ```bash
-pnpm add pipeway-steps zod
+pnpm add pipeway-steps zod   # or valibot, or arktype
 ```
 
 ## `body(schema)` {#body}

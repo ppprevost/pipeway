@@ -1,10 +1,13 @@
 {
   "name": "pipeway-steps",
   "version": "0.1.0",
-  "description": "Generic Zod validation steps for pipeway (body, query).",
+  "description": "Generic validation steps for pipeway (body, query) — Standard Schema: works with Zod, Valibot, ArkType.",
   "keywords": [
     "pipeway",
+    "standard-schema",
     "zod",
+    "valibot",
+    "arktype",
     "validation",
     "middleware"
   ],
@@ -35,15 +38,18 @@
     "build": "tsup",
     "typecheck": "tsc --noEmit"
   },
+  "dependencies": {
+    "@standard-schema/spec": "^1.0.0"
+  },
   "peerDependencies": {
-    "pipeway": "workspace:*",
-    "zod": "^3.23.0"
+    "pipeway": "workspace:*"
   },
   "devDependencies": {
     "pipeway": "workspace:*",
     "tsup": "^8.3.0",
     "typescript": "^5.6.0",
-    "zod": "^3.23.0"
+    "valibot": "^1.0.0",
+    "zod": "^3.24.0"
   },
   "publishConfig": {
     "access": "public"

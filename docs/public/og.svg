@@ -1,0 +1,28 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="og-bg" x1="0" y1="0" x2="1200" y2="630" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0B1020"/>
+      <stop offset="1" stop-color="#161033"/>
+    </linearGradient>
+    <linearGradient id="og-fg" x1="120" y1="240" x2="320" y2="420" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#22D3EE"/>
+      <stop offset="0.5" stop-color="#6366F1"/>
+      <stop offset="1" stop-color="#A855F7"/>
+    </linearGradient>
+    <radialGradient id="og-glow" cx="220" cy="320" r="320" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6366F1" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#6366F1" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#og-bg)"/>
+  <circle cx="220" cy="320" r="300" fill="url(#og-glow)"/>
+  <g stroke="url(#og-fg)" stroke-width="26" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <path d="M120 230 L190 320 L120 410" opacity="0.5"/>
+    <path d="M195 230 L265 320 L195 410" opacity="0.8"/>
+    <path d="M270 230 L340 320 L270 410"/>
+  </g>
+  <text x="430" y="290" font-family="Inter, system-ui, sans-serif" font-size="96" font-weight="800" fill="#FFFFFF">pipeway</text>
+  <text x="432" y="350" font-family="Inter, system-ui, sans-serif" font-size="34" font-weight="600" fill="#C7D2FE">One handler. Every runtime.</text>
+  <text x="432" y="408" font-family="Inter, system-ui, sans-serif" font-size="26" fill="#94A3B8">A portable, typed request pipeline on Web-standard Request/Response.</text>
+  <text x="432" y="452" font-family="Inter, system-ui, sans-serif" font-size="22" fill="#64748B">Bun · Deno · Workers · Next · Hono</text>
+</svg>

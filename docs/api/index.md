@@ -28,7 +28,7 @@ Types: [`Step`](/api/pipe#type-step), [`BaseCtx`](/api/pipe#type-basectx),
 
 ## `pipeway-steps`
 
-Generic, framework-agnostic Zod steps.
+Generic, framework-agnostic Standard Schema steps (Zod / Valibot / ArkType).
 
 | Export | Summary |
 | --- | --- |
@@ -40,6 +40,14 @@ Generic, framework-agnostic Zod steps.
 | Export | Summary |
 | --- | --- |
 | [`toNode(handler)`](/api/adapters#tonode) | Run a pipeway handler as Express/Node middleware. |
+
+## `pipeway-client`
+
+A portable, Result-first REST client (optional Standard Schema validation).
+
+| Export | Summary |
+| --- | --- |
+| [`createClient(config)`](/api/client#createclient) | Create a typed `get`/`post`/… client. |
 
 ## Mental model
 

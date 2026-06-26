@@ -74,9 +74,10 @@ runtime surprise.
 
 | Package | What |
 | --- | --- |
-| `pipeway` | the pipeline core |
-| `pipeway-steps` | generic Zod steps (`body`, `query`) |
+| `pipeway` | the pipeline core (`use` · `map` · `catch` · `serialize` · `transform` · `handle` · `json`) |
+| `pipeway-steps` | Standard Schema steps — `body`, `query` (Zod / Valibot / ArkType) |
 | `pipeway-adapter-node` | Express/Fastify/Node bridge |
+| `pipeway-client` | portable Result-first REST client |
 
 ## Not in scope
 
