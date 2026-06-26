@@ -1,5 +1,4 @@
 import { defineConfig } from 'vitepress'
-import { transformerTwoslash } from 'vitepress-plugin-twoslash'
 
 // base must match the GitHub Pages sub-path: ppprevost.github.io/pipeway/
 export default defineConfig({
@@ -7,10 +6,6 @@ export default defineConfig({
   description: 'A portable, typed request pipeline on Web-standard Request/Response.',
   base: '/pipeway/',
   cleanUrls: true,
-  markdown: {
-    codeTransformers: [transformerTwoslash()],
-    languages: ['ts', 'js'],
-  },
   themeConfig: {
     nav: [
       { text: 'Guide', link: '/guide/getting-started' },

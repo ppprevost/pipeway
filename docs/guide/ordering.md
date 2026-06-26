@@ -6,8 +6,7 @@ is a **type error** — caught by `tsc`, not at runtime.
 
 ## The mistake the compiler catches
 
-```ts twoslash
-// @errors: 2345
+```ts
 import { pipe, ok, type Step } from 'pipeway'
 
 // A step that NEEDS `user` already in context.
@@ -21,7 +20,7 @@ pipe()
 
 ## Add the producer first, and it type-checks
 
-```ts twoslash
+```ts
 import { pipe, ok, type Step } from 'pipeway'
 
 const requireAdmin: Step<{ user: { admin: boolean } }, { admin: true }> = (ctx) =>
@@ -31,5 +30,4 @@ pipe()
   .use(() => ok({ user: { admin: true } }))
   .use(requireAdmin) // ✅ user is now in context
   .handle(({ admin }) => ({ admin }))
-//          ^?
 ```
