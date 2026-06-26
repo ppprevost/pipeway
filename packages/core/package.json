@@ -1,6 +1,6 @@
 {
   "name": "pipeway",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A portable, typed request pipeline on Web-standard Request/Response. NestJS-style lifecycle, zero framework lock-in. Runs on Bun, Deno, Workers, Next, Hono.",
   "keywords": [
     "middleware",
