@@ -7,7 +7,7 @@ import { body } from 'pipeway-steps'
 import { z } from 'zod'
 
 const createTodo = pipe()
-  .use((ctx) => ok({ requestId: crypto.randomUUID() }))
+  .use(() => ok({ requestId: crypto.randomUUID() }))
   .use(body(z.object({ title: z.string().min(1) })))
   .transform((res, ctx) => {
     res.headers.set('x-request-id', ctx.requestId)

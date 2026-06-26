@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { Readable } from 'node:stream'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 
-import { pipe, ok } from 'pipeway'
+import { pipe } from 'pipeway'
 import { body } from 'pipeway-steps'
 import { z } from 'zod'
 
