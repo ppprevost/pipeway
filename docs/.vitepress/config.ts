@@ -45,6 +45,7 @@ export default defineConfig({
           { text: 'Adapters', link: '/api/adapters' },
           { text: 'Client', link: '/api/client' },
           { text: 'React hooks', link: '/api/react' },
+          { text: 'Next actions', link: '/api/next' },
         ],
       },
     ],

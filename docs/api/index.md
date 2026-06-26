@@ -58,6 +58,15 @@ React hooks over the client.
 | [`useMutation(fn)`](/api/react#usemutation) | Result-first write hook. |
 | [`useQuery(fetcher, opts?)`](/api/react#usequery) | Read hook (runs on mount, refetch). |
 
+## `pipeway-next`
+
+A typed pipeline for Next.js server actions.
+
+| Export | Summary |
+| --- | --- |
+| [`action(options?)`](/api/next#action) | Build a server-action pipeline → `ActionResult`. |
+| [`input(schema)`](/api/next#input) | Validate the action argument (Standard Schema). |
+
 ## Mental model
 
 ```

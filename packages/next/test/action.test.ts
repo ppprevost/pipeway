@@ -1,0 +1,71 @@
+import { describe, it, expect, vi } from 'vitest'
+import { z } from 'zod'
+
+import { action, input, ok, fail, success, failure } from '../src/index'
+
+describe('action', () => {
+  it('runs steps and returns ok with data', async () => {
+    const run = action<{ title: string }>()
+      .use((ctx: { input: { title: string } }) => ok({ upper: ctx.input.title.toUpperCase() }))
+      .handle((ctx) => ({ title: ctx.upper }))
+
+    expect(await run({ title: 'milk' })).toEqual({ ok: true, data: { title: 'MILK' } })
+  })
+
+  it('short-circuits when a step fails', async () => {
+    const run = action()
+      .use(() => fail('Unauthorized'))
+      .handle(() => ({ never: true }))
+
+    expect(await run()).toEqual({ ok: false, error: 'Unauthorized' })
+  })
+
+  it('validates input with a Standard Schema step', async () => {
+    const run = action<unknown>()
+      .use(input(z.object({ title: z.string().min(1) })))
+      .handle((ctx) => ({ saved: ctx.data.title }))
+
+    expect(await run({ title: 'x' })).toEqual({ ok: true, data: { saved: 'x' } })
+    const bad = await run({ title: '' })
+    expect(bad.ok).toBe(false)
+    if (!bad.ok) expect(bad.error).toBe('ValidationError')
+  })
+
+  it('maps a failed domain Result via onResult', async () => {
+    const run = action<void, 'NotFound'>({ onResult: (e) => `mapped:${e}` }).handle(() => failure('NotFound' as const))
+    expect(await run()).toEqual({ ok: false, error: 'mapped:NotFound' })
+  })
+
+  it('returns success(value) as data', async () => {
+    const run = action().handle(() => success({ id: 1 }))
+    expect(await run()).toEqual({ ok: true, data: { id: 1 } })
+  })
+
+  it('revalidates injected paths only on success', async () => {
+    const revalidate = vi.fn()
+    const run = action({ revalidate }).revalidate('/todos', '/').handle(() => ({ done: true }))
+    await run()
+    expect(revalidate).toHaveBeenCalledWith('/todos')
+    expect(revalidate).toHaveBeenCalledWith('/')
+    expect(revalidate).toHaveBeenCalledTimes(2)
+  })
+
+  it('does not revalidate when a step fails', async () => {
+    const revalidate = vi.fn()
+    const run = action({ revalidate })
+      .revalidate('/todos')
+      .use(() => fail('Nope'))
+      .handle(() => ({ done: true }))
+    await run()
+    expect(revalidate).not.toHaveBeenCalled()
+  })
+
+  it('never throws — wraps a thrown handler as InternalError', async () => {
+    const run = action().handle(() => {
+      throw new Error('boom')
+    })
+    const res = await run()
+    expect(res.ok).toBe(false)
+    if (!res.ok) expect(res.error).toBe('InternalError')
+  })
+})

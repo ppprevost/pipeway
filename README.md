@@ -79,6 +79,7 @@ runtime surprise.
 | `pipeway-adapter-node` | Express/Fastify/Node bridge |
 | `pipeway-client` | portable Result-first REST client |
 | `pipeway-react` | React hooks (`useQuery`, `useMutation`) over the client |
+| `pipeway-next` | typed pipeline for Next.js server actions |
 
 ## Not in scope
 
