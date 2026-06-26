@@ -1,11 +1,20 @@
 {
   "name": "pipeway-steps",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Generic Zod validation steps for pipeway (body, query).",
-  "keywords": ["pipeway", "zod", "validation", "middleware"],
+  "keywords": [
+    "pipeway",
+    "zod",
+    "validation",
+    "middleware"
+  ],
   "license": "MIT",
   "author": "Pierre-Philippe Prévost",
-  "repository": { "type": "git", "url": "git+https://github.com/ppprevost/pipeway.git", "directory": "packages/steps" },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ppprevost/pipeway.git",
+    "directory": "packages/steps"
+  },
   "homepage": "https://ppprevost.github.io/pipeway",
   "type": "module",
   "sideEffects": false,
@@ -19,7 +28,9 @@
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup",
     "typecheck": "tsc --noEmit"
@@ -34,5 +45,7 @@
     "typescript": "^5.6.0",
     "zod": "^3.23.0"
   },
-  "publishConfig": { "access": "public" }
+  "publishConfig": {
+    "access": "public"
+  }
 }
