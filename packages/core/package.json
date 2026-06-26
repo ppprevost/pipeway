@@ -1,0 +1,32 @@
+{
+  "name": "pipeway",
+  "version": "0.0.0",
+  "description": "A portable, typed request pipeline on Web-standard Request/Response. NestJS-style lifecycle, zero framework lock-in. Runs on Bun, Deno, Workers, Next, Hono.",
+  "keywords": ["middleware", "pipeline", "request", "fetch", "web-standard", "bun", "deno", "workers", "hono", "typescript"],
+  "license": "MIT",
+  "author": "Pierre-Philippe Prévost",
+  "repository": { "type": "git", "url": "git+https://github.com/ppprevost/pipeway.git", "directory": "packages/core" },
+  "homepage": "https://ppprevost.github.io/pipeway",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "tsup": "^8.3.0",
+    "typescript": "^5.6.0"
+  },
+  "publishConfig": { "access": "public" }
+}

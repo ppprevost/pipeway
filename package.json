@@ -1,0 +1,26 @@
+{
+  "name": "pipeway-monorepo",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@9.12.0",
+  "scripts": {
+    "build": "pnpm -r --filter \"./packages/*\" build",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "pnpm -r --filter \"./packages/*\" typecheck",
+    "lint": "eslint .",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "release": "pnpm build && changeset publish"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.27.9",
+    "@types/node": "^22.7.0",
+    "tsup": "^8.3.0",
+    "typescript": "^5.6.0",
+    "vitepress": "^1.4.0",
+    "vitepress-plugin-twoslash": "^0.10.0",
+    "vitest": "^2.1.0",
+    "zod": "^3.23.0"
+  }
+}

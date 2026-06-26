@@ -1,0 +1,37 @@
+{
+  "name": "pipeway-adapter-node",
+  "version": "0.0.0",
+  "description": "Node (Express/Fastify/http) adapter for pipeway. Every other runtime needs no adapter.",
+  "keywords": ["pipeway", "express", "fastify", "node", "adapter"],
+  "license": "MIT",
+  "author": "Pierre-Philippe Prévost",
+  "repository": { "type": "git", "url": "git+https://github.com/ppprevost/pipeway.git", "directory": "packages/adapter-node" },
+  "homepage": "https://ppprevost.github.io/pipeway",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "pipeway": "workspace:*"
+  },
+  "devDependencies": {
+    "pipeway": "workspace:*",
+    "@types/node": "^22.7.0",
+    "tsup": "^8.3.0",
+    "typescript": "^5.6.0"
+  },
+  "publishConfig": { "access": "public" }
+}
