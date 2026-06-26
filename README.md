@@ -78,6 +78,7 @@ runtime surprise.
 | `pipeway-steps` | Standard Schema steps — `body`, `query` (Zod / Valibot / ArkType) |
 | `pipeway-adapter-node` | Express/Fastify/Node bridge |
 | `pipeway-client` | portable Result-first REST client |
+| `pipeway-react` | React hooks (`useQuery`, `useMutation`) over the client |
 
 ## Not in scope
 

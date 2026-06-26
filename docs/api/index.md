@@ -49,6 +49,15 @@ A portable, Result-first REST client (optional Standard Schema validation).
 | --- | --- |
 | [`createClient(config)`](/api/client#createclient) | Create a typed `get`/`post`/… client. |
 
+## `pipeway-react`
+
+React hooks over the client.
+
+| Export | Summary |
+| --- | --- |
+| [`useMutation(fn)`](/api/react#usemutation) | Result-first write hook. |
+| [`useQuery(fetcher, opts?)`](/api/react#usequery) | Read hook (runs on mount, refetch). |
+
 ## Mental model
 
 ```
