@@ -1,6 +1,6 @@
 {
   "name": "pipeway-steps",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Generic Zod validation steps for pipeway (body, query).",
   "keywords": [
     "pipeway",
