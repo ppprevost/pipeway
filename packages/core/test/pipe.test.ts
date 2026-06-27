@@ -119,6 +119,22 @@ describe('pipe', () => {
     expect(await res.json()).toEqual({ id: 1, name: 'Ada' })
   })
 
+  it('adaptResult converts a foreign Result shape ({ success })', async () => {
+    type Foreign = { success: true; data: unknown } | { success: false; error: string }
+    const handler = pipe<Record<never, never>, string>({
+      onResult: (e) => new Response(e, { status: 422 }),
+      adaptResult: (out) => {
+        const f = out as Foreign
+        if (typeof f !== 'object' || f === null || !('success' in f)) return null
+        return f.success ? { ok: true, value: f.data } : { ok: false, error: f.error }
+      },
+    }).handle((): Foreign => ({ success: false, error: 'Bad' }))
+
+    const res = await handler(req(), {})
+    expect(res.status).toBe(422)
+    expect(await res.text()).toBe('Bad')
+  })
+
   it('.serialize leaves a non-JSON response untouched', async () => {
     const handler = pipe()
       .serialize(() => ({ tampered: true }))

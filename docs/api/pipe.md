@@ -264,6 +264,7 @@ type PipeOptions<E = never> = {
   domain error to an HTTP Response in one place.
 - **`onError`** — catches an unexpected throw in any step or the handler. Without
   it, throws propagate to your runtime.
+- **`adaptResult`** — recognize a foreign Result shape your handlers return (a different `Result` than pipeway's `success`/`failure`) and normalize it. Tried before pipeway's own Result; return null to fall through. Pairs with `onResult`.
 
 ### `Handler<Ctx, T>` {#type-handler}
 

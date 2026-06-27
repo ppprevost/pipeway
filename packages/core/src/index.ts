@@ -18,6 +18,7 @@ export type {
   PipeOptions,
   Pipeline,
   Result,
+  ResultAdapter,
   ResultMapper,
   Step,
   StepResult,
@@ -129,10 +130,20 @@ const compile = <Params, Ctx, E, T>(
       }
 
       const out = await handler(ctx as unknown as Ctx)
+      const adapted = options.adaptResult ? options.adaptResult(out) : null
 
       let response: Response
       if (isResponse(out)) {
         response = out
+      } else if (adapted) {
+        if (adapted.ok) {
+          response = Response.json(adapted.value, jsonInit)
+        } else {
+          if (!options.onResult) {
+            throw new Error('pipeway: adaptResult returned a failed Result but no `onResult` mapper was configured')
+          }
+          response = options.onResult(adapted.error)
+        }
       } else if (isResult(out)) {
         if (out.ok) {
           response = Response.json(out.value, jsonInit)
