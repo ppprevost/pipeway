@@ -1,5 +1,13 @@
 # pipeway-next
 
+## 0.2.0
+
+### Minor Changes
+
+- 8d8a852: Add `adaptResult` option — bring-your-own-Result interop. Recognize and normalize
+  a foreign `Result` shape your handlers return (e.g. a `{ success }`-shaped Result
+  from another codebase) without changing call sites.
+
 ## 0.1.0
 
 ### Minor Changes
