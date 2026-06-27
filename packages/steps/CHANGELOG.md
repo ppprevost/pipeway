@@ -1,5 +1,14 @@
 # pipeway-steps
 
+## 1.0.1
+
+### Patch Changes
+
+- 2174cb2: Move `pipeway` from `peerDependencies` to `dependencies` (`workspace:^`). This
+  fixes a changesets quirk where an internal peer dependency would force a spurious
+  **major** bump on every core release; as a regular internal dependency it now gets
+  a controlled patch bump with an auto-updated range. No API change.
+
 ## 1.0.0
 
 ### Minor Changes
