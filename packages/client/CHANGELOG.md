@@ -1,5 +1,13 @@
 # pipeway-client
 
+## 0.2.0
+
+### Minor Changes
+
+- 9ff3159: Add `unwrap(result)` (and `ClientError`): turns a `ClientResult<T>` into `T`,
+  throwing on failure — the one-line bridge to throw-based data libraries (TanStack
+  Query, SWR). pipeway ships no custom React hooks; compose with your data library.
+
 ## 0.1.0
 
 ### Minor Changes

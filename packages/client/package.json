@@ -1,6 +1,6 @@
 {
   "name": "pipeway-client",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A small, portable, Result-first REST client. Web-fetch based, optional Standard Schema response validation.",
   "keywords": [
     "pipeway",

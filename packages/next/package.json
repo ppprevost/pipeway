@@ -1,11 +1,22 @@
 {
   "name": "pipeway-next",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "A typed pipeline for Next.js server actions — compile-time step ordering, Result-first ActionResult, Standard Schema input validation.",
-  "keywords": ["pipeway", "next", "server-actions", "next.js", "action", "standard-schema"],
+  "keywords": [
+    "pipeway",
+    "next",
+    "server-actions",
+    "next.js",
+    "action",
+    "standard-schema"
+  ],
   "license": "MIT",
   "author": "Pierre-Philippe Prévost",
-  "repository": { "type": "git", "url": "git+https://github.com/ppprevost/pipeway.git", "directory": "packages/next" },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ppprevost/pipeway.git",
+    "directory": "packages/next"
+  },
   "homepage": "https://ppprevost.github.io/pipeway",
   "type": "module",
   "sideEffects": false,
@@ -19,7 +30,9 @@
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup",
     "typecheck": "tsc --noEmit"
@@ -32,5 +45,7 @@
     "typescript": "^5.6.0",
     "zod": "^3.24.0"
   },
-  "publishConfig": { "access": "public" }
+  "publishConfig": {
+    "access": "public"
+  }
 }
