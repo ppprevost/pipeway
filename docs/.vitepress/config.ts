@@ -32,6 +32,7 @@ export default defineConfig({
         items: [
           { text: 'Getting started', link: '/guide/getting-started' },
           { text: 'Compile-time ordering', link: '/guide/ordering' },
+          { text: 'With React 19', link: '/guide/with-react' },
           { text: 'With React Query', link: '/guide/with-react-query' },
           { text: 'Why pipeway', link: '/guide/why' },
         ],
