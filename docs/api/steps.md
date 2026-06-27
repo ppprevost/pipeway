@@ -10,10 +10,30 @@ ArkType. No lock-in to one library. Auth and rate-limiting are deliberately
 pnpm add pipeway-steps zod   # or valibot, or arktype
 ```
 
+## Any validator (same `body`/`query`)
+
+`body` and `query` take a `StandardSchemaV1` — **not** a Zod type. pipeway-steps
+never imports a validator; you pass yours. All three work unchanged:
+
+```ts
+import { body } from 'pipeway-steps'
+
+import { z } from 'zod'
+body(z.object({ title: z.string().min(1) })) // Zod ≥ 3.24
+
+import * as v from 'valibot'
+body(v.object({ title: v.pipe(v.string(), v.minLength(1)) })) // Valibot ≥ 1.0
+
+import { type } from 'arktype'
+body(type({ title: 'string > 0' })) // ArkType ≥ 2.0
+```
+
+In each case `ctx.body` is typed from the schema's inferred output.
+
 ## `body(schema)` {#body}
 
 ```ts
-function body<T>(schema: ZodType<T>): Step<{ req: Request }, { body: T }>
+function body<T>(schema: StandardSchemaV1<unknown, T>): Step<{ req: Request }, { body: T }>
 ```
 
 Reads the request's JSON body, validates it against `schema`, and adds a typed
@@ -38,7 +58,7 @@ const createTodo = pipe()
 ## `query(schema)` {#query}
 
 ```ts
-function query<T>(schema: ZodType<T>): Step<{ req: Request }, { query: T }>
+function query<T>(schema: StandardSchemaV1<unknown, T>): Step<{ req: Request }, { query: T }>
 ```
 
 Validates the URL search params (as a flat object of strings) against `schema`,
