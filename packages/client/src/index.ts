@@ -8,6 +8,28 @@ export type ClientResult<T> =
   | { readonly ok: true; readonly status: number; readonly data: T }
   | { readonly ok: false; readonly status: number; readonly error: string; readonly body?: unknown }
 
+// Thrown by `unwrap` so the failed ClientResult survives as a typed error.
+export class ClientError extends Error {
+  constructor(
+    readonly status: number,
+    message: string,
+    readonly body?: unknown,
+  ) {
+    super(message)
+    this.name = 'ClientError'
+  }
+}
+
+// Turns a ClientResult into its data, throwing ClientError on failure. This is the
+// bridge to throw-based data libraries: drop it in a TanStack Query `queryFn` or a
+// SWR fetcher — `() => api.get('/todos').then(unwrap)`.
+export const unwrap = <T>(result: ClientResult<T>): T => {
+  if (!result.ok) {
+    throw new ClientError(result.status, result.error, result.body)
+  }
+  return result.data
+}
+
 export type RequestOptions<T> = {
   readonly query?: Record<string, string | number | boolean | null | undefined>
   readonly body?: unknown

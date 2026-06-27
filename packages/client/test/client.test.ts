@@ -1,7 +1,24 @@
 import { describe, it, expect } from 'vitest'
 import { z } from 'zod'
 
-import { createClient } from '../src/index'
+import { createClient, unwrap, ClientError } from '../src/index'
+
+describe('unwrap', () => {
+  it('returns data on ok', () => {
+    expect(unwrap({ ok: true, status: 200, data: { id: 1 } })).toEqual({ id: 1 })
+  })
+
+  it('throws ClientError on failure (for queryFn / fetcher interop)', () => {
+    try {
+      unwrap({ ok: false, status: 404, error: 'NotFound', body: { detail: 'x' } })
+      expect.unreachable()
+    } catch (e) {
+      expect(e).toBeInstanceOf(ClientError)
+      expect((e as ClientError).status).toBe(404)
+      expect((e as ClientError).body).toEqual({ detail: 'x' })
+    }
+  })
+})
 
 // A fake fetch that records the request and returns a scripted Response.
 const stub = (response: Response, capture?: (req: { url: string; init: RequestInit | undefined }) => void): typeof fetch =>

@@ -48,15 +48,10 @@ A portable, Result-first REST client (optional Standard Schema validation).
 | Export | Summary |
 | --- | --- |
 | [`createClient(config)`](/api/client#createclient) | Create a typed `get`/`post`/… client. |
+| [`unwrap(result)`](/api/client#unwrap) | `ClientResult<T>` → `T` (throws on failure) for React Query / SWR. |
 
-## `pipeway-react`
-
-React hooks over the client.
-
-| Export | Summary |
-| --- | --- |
-| [`useMutation(fn)`](/api/react#usemutation) | Result-first write hook. |
-| [`useQuery(fetcher, opts?)`](/api/react#usequery) | Read hook (runs on mount, refetch). |
+> No pipeway-specific React hooks: use **[TanStack Query / SWR](/guide/with-react-query)**
+> with `unwrap`. pipeway types and validates the wire; your data library keeps caching.
 
 ## `pipeway-next`
 

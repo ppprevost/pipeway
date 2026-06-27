@@ -77,8 +77,7 @@ runtime surprise.
 | `pipeway` | the pipeline core (`use` · `map` · `catch` · `serialize` · `transform` · `handle` · `json`) |
 | `pipeway-steps` | Standard Schema steps — `body`, `query` (Zod / Valibot / ArkType) |
 | `pipeway-adapter-node` | Express/Fastify/Node bridge |
-| `pipeway-client` | portable Result-first REST client |
-| `pipeway-react` | React hooks (`useQuery`, `useMutation`) over the client |
+| `pipeway-client` | portable Result-first REST client (`unwrap` for React Query / SWR) |
 | `pipeway-next` | typed pipeline for Next.js server actions |
 
 ## Not in scope
