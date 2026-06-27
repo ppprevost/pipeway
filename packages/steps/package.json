@@ -39,13 +39,10 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@standard-schema/spec": "^1.0.0"
-  },
-  "peerDependencies": {
-    "pipeway": "workspace:*"
+    "@standard-schema/spec": "^1.0.0",
+    "pipeway": "workspace:^"
   },
   "devDependencies": {
-    "pipeway": "workspace:*",
     "tsup": "^8.3.0",
     "typescript": "^5.6.0",
     "valibot": "^1.0.0",
