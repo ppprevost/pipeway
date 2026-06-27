@@ -46,6 +46,20 @@ function action<Input = void, E = never>(options?: ActionOptions<E>): ActionPipe
 | --- | --- | --- |
 | `onResult` | `(error: E) => string` | map a failed `Result` to the user-facing error |
 | `revalidate` | `(path: string) => void` | called per `.revalidate()` path on success — pass `revalidatePath` |
+| `adaptResult` | `(out) => { ok, value } \| { ok: false, error } \| null` | recognize a **foreign Result** shape your handlers return (a different `Result` than pipeway's) and normalize it — return `null` to fall through |
+
+### Foreign Result interop
+
+If your codebase has its own `Result` type (say `{ success }`-shaped), let pipeway
+understand it without changing handlers:
+
+```ts
+const action0 = action<void, MyError>({
+  onResult: (e) => e.kind,
+  adaptResult: (out) =>
+    isMyResult(out) ? (out.success ? { ok: true, value: out.data } : { ok: false, error: out.error }) : null,
+})
+```
 
 `revalidate` is **injected** (not imported) so the package stays framework-light
 and trivially testable. In Next, pass `revalidatePath` from `next/cache`.

@@ -60,6 +60,28 @@ describe('action', () => {
     expect(revalidate).not.toHaveBeenCalled()
   })
 
+  it('adaptResult converts a foreign Result shape ({ success })', async () => {
+    type Foreign<T> = { success: true; data: T } | { success: false; error: string }
+    const isForeign = (v: unknown): v is Foreign<unknown> =>
+      typeof v === 'object' && v !== null && 'success' in v
+
+    const run = action<void, string>({
+      onResult: (e) => `mapped:${e}`,
+      adaptResult: (out) =>
+        isForeign(out) ? (out.success ? { ok: true, value: out.data } : { ok: false, error: out.error }) : null,
+    }).handle((): Foreign<{ id: number }> => ({ success: false, error: 'Nope' }))
+
+    expect(await run()).toEqual({ ok: false, error: 'mapped:Nope' })
+
+    const okRun = action<void, string>({
+      adaptResult: (out) => {
+        const f = out as Foreign<{ id: number }>
+        return f.success ? { ok: true, value: f.data } : { ok: false, error: f.error }
+      },
+    }).handle((): Foreign<{ id: number }> => ({ success: true, data: { id: 1 } }))
+    expect(await okRun()).toEqual({ ok: true, data: { id: 1 } })
+  })
+
   it('never throws — wraps a thrown handler as InternalError', async () => {
     const run = action().handle(() => {
       throw new Error('boom')

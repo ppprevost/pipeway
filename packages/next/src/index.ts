@@ -30,12 +30,21 @@ const isResult = (v: unknown): v is Result<unknown, unknown> =>
 
 type BaseCtx<Input> = { readonly input: Input }
 
+// Bring-your-own-Result interop: recognize a foreign Result type (a different
+// shape than pipeway's `success`/`failure`) and normalize it. Return null for a
+// value that is not one of your Results.
+export type ResultAdapter<E> = (out: unknown) => { ok: true; value: unknown } | { ok: false; error: E } | null
+
 export type ActionOptions<E = never> = {
   // Maps a failed domain Result error to the user-facing error string.
   onResult?: (error: E) => string
   // Called once per `.revalidate()` path after a successful action. In Next, pass
   // `revalidatePath` from 'next/cache'. Omitted = no-op (handy in tests).
   revalidate?: (path: string) => void
+  // Recognize/convert a foreign Result type your handlers return (e.g. a
+  // `{ success }`-shaped Result from another codebase). Tried before pipeway's own
+  // `success`/`failure`. Return null to fall through to the default handling.
+  adaptResult?: ResultAdapter<E>
 }
 
 export type ActionPipeline<Input, Ctx extends BaseCtx<Input>, E> = {
@@ -68,6 +77,16 @@ const build = <Input, Ctx extends BaseCtx<Input>, E>(
         }
 
         const out = await handler(ctx as unknown as Ctx)
+
+        const adapted = options.adaptResult ? options.adaptResult(out) : null
+        if (adapted) {
+          if (!adapted.ok) {
+            const error = options.onResult ? options.onResult(adapted.error) : String(adapted.error)
+            return { ok: false, error }
+          }
+          revalidateAll(paths, options.revalidate)
+          return { ok: true, data: adapted.value as T }
+        }
 
         if (isResult(out)) {
           if (!out.ok) {
