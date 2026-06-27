@@ -20,12 +20,20 @@ export type Result<T, E> = { readonly ok: true; readonly value: T } | { readonly
 
 export type ResultMapper<E> = (error: E) => Response
 
+// Bring-your-own-Result interop: recognize a foreign Result type (a different
+// shape than pipeway's `success`/`failure`) and normalize it. Return null for a
+// value that is not one of your Results.
+export type ResultAdapter<E> = (out: unknown) => { ok: true; value: unknown } | { ok: false; error: E } | null
+
 export type PipeOptions<E = never> = {
   // Maps a failed domain Result error into an HTTP Response. Required only if a
   // handler returns Result<_, E>.
   readonly onResult?: ResultMapper<E>
   // Last-resort catch for an unexpected throw in a step or the handler.
   readonly onError?: (error: unknown, req: Request) => Response
+  // Recognize/convert a foreign Result type your handlers return (e.g. a
+  // `{ success }`-shaped Result). Tried before pipeway's own `success`/`failure`.
+  readonly adaptResult?: ResultAdapter<E>
 }
 
 export type Handler<Ctx, T> = (ctx: Ctx) => T | Response | Promise<T | Response>
