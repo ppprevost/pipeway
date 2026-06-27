@@ -36,11 +36,10 @@
     "build": "tsup",
     "typecheck": "tsc --noEmit"
   },
-  "peerDependencies": {
-    "pipeway": "workspace:*"
+  "dependencies": {
+    "pipeway": "workspace:^"
   },
   "devDependencies": {
-    "pipeway": "workspace:*",
     "pipeway-steps": "workspace:*",
     "@types/node": "^22.7.0",
     "tsup": "^8.3.0",
