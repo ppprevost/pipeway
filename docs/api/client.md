@@ -85,3 +85,25 @@ const res = await api.get('/todos/1', { schema: Todo })
 Reuse the **same** schema your server validates with on both sides — one source
 of truth for the shape, enforced at both ends.
 :::
+
+## `unwrap(result)` {#unwrap}
+
+```ts
+function unwrap<T>(result: ClientResult<T>): T // throws ClientError on failure
+```
+
+The bridge to throw-based data libraries (TanStack Query, SWR). Drop it in a
+`queryFn` / fetcher:
+
+```ts
+import { createClient, unwrap } from 'pipeway-client'
+
+useQuery({
+  queryKey: ['todo', id],
+  queryFn: () => api.get(`/todos/${id}`, { schema: Todo }).then(unwrap),
+})
+```
+
+On failure it throws a typed `ClientError` (`status`, `message`, `body`). See the
+[With React Query](/guide/with-react-query) guide — pipeway ships **no** custom
+hooks, your data library keeps the caching.

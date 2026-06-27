@@ -32,6 +32,7 @@ export default defineConfig({
         items: [
           { text: 'Getting started', link: '/guide/getting-started' },
           { text: 'Compile-time ordering', link: '/guide/ordering' },
+          { text: 'With React Query', link: '/guide/with-react-query' },
           { text: 'Why pipeway', link: '/guide/why' },
         ],
       },
@@ -44,7 +45,6 @@ export default defineConfig({
           { text: 'Result', link: '/api/result' },
           { text: 'Adapters', link: '/api/adapters' },
           { text: 'Client', link: '/api/client' },
-          { text: 'React hooks', link: '/api/react' },
           { text: 'Next actions', link: '/api/next' },
         ],
       },
