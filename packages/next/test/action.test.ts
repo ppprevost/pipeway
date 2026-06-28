@@ -90,4 +90,50 @@ describe('action', () => {
     expect(res.ok).toBe(false)
     if (!res.ok) expect(res.error).toBe('InternalError')
   })
+
+  it('calls onError with the error and meta before masking', async () => {
+    const seen: Array<{ error: unknown; name?: string }> = []
+    const run = action({ onError: (error, meta) => seen.push({ error, name: meta.name }) })
+      .meta({ name: 'createTodo' })
+      .handle(() => {
+        throw new Error('boom')
+      })
+
+    const res = await run()
+    expect(res).toEqual({ ok: false, error: 'InternalError', meta: 'boom' })
+    expect(seen).toHaveLength(1)
+    expect((seen[0].error as Error).message).toBe('boom')
+    expect(seen[0].name).toBe('createTodo')
+  })
+
+  it('lets onError re-throw (control-flow) escape the action', async () => {
+    const redirect = new Error('NEXT_REDIRECT')
+    const run = action({
+      onError: (error) => {
+        // mimic next's unstable_rethrow for navigation control-flow
+        if ((error as Error).message === 'NEXT_REDIRECT') throw error
+      },
+    }).handle(() => {
+      throw redirect
+    })
+
+    await expect(run()).rejects.toThrow('NEXT_REDIRECT')
+  })
+
+  it('fail() attaches fieldErrors and retryAfter', async () => {
+    const validation = action()
+      .use(() => fail('ValidationError', { fieldErrors: { title: 'required' }, meta: ['raw'] }))
+      .handle(() => ({ never: true }))
+    expect(await validation()).toEqual({
+      ok: false,
+      error: 'ValidationError',
+      fieldErrors: { title: 'required' },
+      meta: ['raw'],
+    })
+
+    const throttled = action()
+      .use(() => fail('RateLimitedError', { retryAfter: 42 }))
+      .handle(() => ({ never: true }))
+    expect(await throttled()).toEqual({ ok: false, error: 'RateLimitedError', retryAfter: 42 })
+  })
 })

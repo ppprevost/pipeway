@@ -47,6 +47,29 @@ function action<Input = void, E = never>(options?: ActionOptions<E>): ActionPipe
 | `onResult` | `(error: E) => string` | map a failed `Result` to the user-facing error |
 | `revalidate` | `(path: string) => void` | called per `.revalidate()` path on success — pass `revalidatePath` |
 | `adaptResult` | `(out) => { ok, value } \| { ok: false, error } \| null` | recognize a **foreign Result** shape your handlers return (a different `Result` than pipeway's) and normalize it — return `null` to fall through |
+| `onError` | `(error: unknown, meta: ActionMeta) => void` | called on a thrown step/handler before the action masks it as `InternalError`. Report it (Sentry) and **re-throw framework control-flow** here so it isn't swallowed (see below) |
+
+### `onError` — report & don't swallow `redirect()`
+
+A server action that returns an `ActionResult` must never throw — so the pipeline
+catches everything. But Next signals `redirect()` / `notFound()` by **throwing** a
+control-flow error that the framework needs to see. `onError` lets you re-throw it
+(and tag/report real errors):
+
+```ts
+import { unstable_rethrow } from 'next/navigation'
+import * as Sentry from '@sentry/nextjs'
+
+const action0 = action({
+  onError: (error, meta) => {
+    unstable_rethrow(error) // re-throws redirect/notFound; returns for real errors
+    Sentry.captureException(error, { tags: { action: meta.name } })
+  },
+})
+```
+
+If `onError` throws, that throw escapes the action unchanged — exactly what
+`unstable_rethrow` needs. Otherwise the action returns `InternalError`.
 
 ### Foreign Result interop
 
@@ -70,6 +93,8 @@ and trivially testable. In Next, pass `revalidatePath` from `next/cache`.
   (`Ctx extends Need`). Ad-hoc inline steps that read `ctx` need a param
   annotation; pre-typed steps like [`input`](#input) infer automatically.
 - **`.revalidate(...paths)`** — record paths to revalidate after a successful run.
+- **`.meta(meta)`** — attach metadata (e.g. `{ name: 'createTodo' }`) surfaced to
+  `onError` for triage. Returns the pipeline.
 - **`.handle(handler)`** — terminate → `(input) => Promise<ActionResult<T>>`.
 
 ## `ActionResult<T>`
@@ -77,22 +102,33 @@ and trivially testable. In Next, pass `revalidatePath` from `next/cache`.
 ```ts
 type ActionResult<T> =
   | { ok: true; data: T }
-  | { ok: false; error: string; meta?: unknown }
+  | { ok: false; error: string; meta?: unknown; fieldErrors?: Record<string, string>; retryAfter?: number }
 ```
+
+`fieldErrors` and `retryAfter` are well-known optionals for the two concerns every
+action UI has — form validation and rate limiting — so a form can map per-field
+messages and a throttled call can show a retry hint without reaching into `meta`.
 
 | Handler returns | Result |
 | --- | --- |
 | a value | `{ ok: true, data }` |
 | `success(value)` | `{ ok: true, data: value }` |
 | `failure(error)` | `{ ok: false, error: onResult(error) }` |
-| throws | `{ ok: false, error: 'InternalError' }` (never propagates) |
+| throws | `onError(error, meta)` runs (may re-throw), else `{ ok: false, error: 'InternalError' }` |
 
 ## Steps: `ok` · `fail` · `input`
 
 ```ts
 ok(extra)               // continue, merge `extra` into context
-fail(error, meta?)      // stop → { ok: false, error }
+fail(error, extra?)     // stop → { ok: false, error, ...extra }
 input(schema)           // validate the action arg → typed `ctx.data`
+```
+
+`fail`'s `extra` carries the well-known `ActionErr` fields:
+
+```ts
+fail('ValidationError', { fieldErrors: { title: 'required' }, meta: rawIssues })
+fail('RateLimitedError', { retryAfter: 30 })
 ```
 
 ```ts
