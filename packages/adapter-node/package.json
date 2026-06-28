@@ -1,6 +1,6 @@
 {
   "name": "pipeway-adapter-node",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Node (Express/Fastify/http) adapter for pipeway. Every other runtime needs no adapter.",
   "keywords": [
     "pipeway",
