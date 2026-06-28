@@ -143,3 +143,117 @@ describe('pipe', () => {
     expect(await res.text()).toBe('plain')
   })
 })
+
+describe('pipe.stream', () => {
+  const drain = async (res: Response): Promise<string> => {
+    const reader = res.body!.getReader()
+    const decoder = new TextDecoder()
+    let out = ''
+    for (;;) {
+      const { value, done } = await reader.read()
+      if (done) break
+      out += decoder.decode(value, { stream: true })
+    }
+    return out
+  }
+
+  it('streams an AsyncIterable of strings with default SSE headers', async () => {
+    async function* gen() {
+      yield 'data: a\n\n'
+      yield 'data: b\n\n'
+    }
+    const handler = pipe().stream(() => gen())
+    const res = await handler(req(), {})
+
+    expect(res.status).toBe(200)
+    expect(res.headers.get('content-type')).toBe('text/event-stream; charset=utf-8')
+    expect(res.headers.get('cache-control')).toBe('no-cache, no-transform')
+    expect(await drain(res)).toBe('data: a\n\ndata: b\n\n')
+  })
+
+  it('wraps a raw ReadableStream', async () => {
+    const stream = new ReadableStream<string>({
+      start(controller) {
+        controller.enqueue('chunk1')
+        controller.enqueue('chunk2')
+        controller.close()
+      },
+    })
+    const handler = pipe().stream(() => stream)
+    const res = await handler(req(), {})
+    expect(await drain(res)).toBe('chunk1chunk2')
+  })
+
+  it('passes a returned Response through, keeping its own headers', async () => {
+    const handler = pipe().stream(
+      () => new Response('raw', { status: 207, headers: { 'content-type': 'text/plain' } }),
+    )
+    const res = await handler(req(), {})
+    expect(res.status).toBe(207)
+    expect(res.headers.get('content-type')).toBe('text/plain')
+    expect(await res.text()).toBe('raw')
+  })
+
+  it('lets init override the default headers', async () => {
+    async function* gen() {
+      yield 'x'
+    }
+    const handler = pipe().stream(() => gen(), {
+      status: 201,
+      headers: { 'content-type': 'application/x-ndjson' },
+    })
+    const res = await handler(req(), {})
+    expect(res.status).toBe(201)
+    expect(res.headers.get('content-type')).toBe('application/x-ndjson')
+    expect(res.headers.get('cache-control')).toBe('no-cache, no-transform')
+  })
+
+  it('short-circuits a failing step before streaming', async () => {
+    let handlerRan = false
+    const handler = pipe()
+      .use(() => fail(new Response('nope', { status: 429 })))
+      .stream(() => {
+        handlerRan = true
+        return new Response('body')
+      })
+    const res = await handler(req(), {})
+    expect(res.status).toBe(429)
+    expect(handlerRan).toBe(false)
+  })
+
+  it('cancels the source iterator on consumer cancel', async () => {
+    let returned = false
+    const iterable: AsyncIterable<string> = {
+      [Symbol.asyncIterator]() {
+        return {
+          next: async () => ({ value: 'x', done: false }),
+          return: async () => {
+            returned = true
+            return { value: undefined, done: true }
+          },
+        }
+      },
+    }
+    const handler = pipe().stream(() => iterable)
+    const res = await handler(req(), {})
+    const reader = res.body!.getReader()
+    await reader.read()
+    await reader.cancel()
+    expect(returned).toBe(true)
+  })
+
+  it('routes a throw before the first chunk through onError', async () => {
+    const handler = pipe({ onError: () => new Response('handled', { status: 500 }) }).stream(() => {
+      throw new Error('boom')
+    })
+    const res = await handler(req(), {})
+    expect(res.status).toBe(500)
+    expect(await res.text()).toBe('handled')
+  })
+
+  it('rejects a non-stream return at runtime', async () => {
+    // @ts-expect-error stream handler may not return a plain value
+    const handler = pipe().stream(() => ({ not: 'a stream' }))
+    await expect(handler(req(), {})).rejects.toThrow('must return a Response, ReadableStream, or AsyncIterable')
+  })
+})

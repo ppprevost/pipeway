@@ -38,6 +38,20 @@ export type PipeOptions<E = never> = {
 
 export type Handler<Ctx, T> = (ctx: Ctx) => T | Response | Promise<T | Response>
 
+// A streaming handler returns a body source, not a value. It may be a ready
+// Response (passed through verbatim, with its own headers), a raw ReadableStream,
+// or any AsyncIterable of chunks (e.g. an LLM provider SDK's token stream, with no
+// Vercel AI SDK dependency). It may NOT return a Result — the type forbids wrapping
+// a stream in success()/failure(), which would otherwise be JSON-serialized and
+// corrupt the body. String chunks are UTF-8 encoded; backpressure and client
+// disconnect (cancel) propagate to the iterator.
+export type StreamSource =
+  | Response
+  | ReadableStream<Uint8Array | string>
+  | AsyncIterable<Uint8Array | string>
+
+export type StreamHandler<Ctx> = (ctx: Ctx) => StreamSource | Promise<StreamSource>
+
 // The compiled handler. `params` is supplied by the runtime adapter (the router),
 // never by pipeway — pipeway does not route.
 export type CompiledHandler<Params> = (req: Request, params: Params) => Promise<Response>
@@ -65,4 +79,10 @@ export type Pipeline<Params, Ctx extends BaseCtx<Params>, E> = {
   // Like `handle`, but JSON-serialized values use `status` (default 200) — so a
   // handler can return a plain value and still answer 201/202/… declaratively.
   json<T>(handler: Handler<Ctx, T | Result<T, E>>, status?: number): CompiledHandler<Params>
+  // Terminate the pipeline with a streamed body. Steps (auth, rate-limit, body)
+  // run first, so a 401/429 short-circuits before any chunk is sent. The handler
+  // returns a Response | ReadableStream | AsyncIterable; serializers never run on a
+  // stream. `init` overrides the default SSE-ish headers (only when the handler
+  // returns a raw stream/iterable — a returned Response keeps its own headers).
+  stream(handler: StreamHandler<Ctx>, init?: ResponseInit): CompiledHandler<Params>
 }

@@ -8,6 +8,8 @@ import type {
   Result,
   Step,
   StepResult,
+  StreamHandler,
+  StreamSource,
 } from './types'
 
 export type {
@@ -22,6 +24,8 @@ export type {
   ResultMapper,
   Step,
   StepResult,
+  StreamHandler,
+  StreamSource,
 } from './types'
 
 // Step constructors — the only way to build a StepResult, so call sites stay
@@ -43,6 +47,79 @@ const isResult = (value: unknown): value is Result<unknown, unknown> =>
 
 const isResponse = (value: unknown): value is Response =>
   typeof Response !== 'undefined' && value instanceof Response
+
+const isReadableStream = (value: unknown): value is ReadableStream =>
+  typeof ReadableStream !== 'undefined' && value instanceof ReadableStream
+
+const isAsyncIterable = (value: unknown): value is AsyncIterable<unknown> =>
+  typeof value === 'object' && value !== null && typeof (value as AsyncIterable<unknown>)[Symbol.asyncIterator] === 'function'
+
+// Default headers for a raw stream/iterable body. SSE-flavored but generic; the
+// caller can override any of them via the `init` argument to `.stream()`. A
+// handler that returns a Response keeps its own headers (these are not applied).
+const STREAM_DEFAULT_HEADERS: Record<string, string> = {
+  'content-type': 'text/event-stream; charset=utf-8',
+  'cache-control': 'no-cache, no-transform',
+  connection: 'keep-alive',
+}
+
+const encoder = new TextEncoder()
+const toBytes = (chunk: Uint8Array | string): Uint8Array =>
+  typeof chunk === 'string' ? encoder.encode(chunk) : chunk
+
+// A Response body must emit bytes; encode string chunks so a ReadableStream<string>
+// works the same as an AsyncIterable<string>.
+const encodeStream = (stream: ReadableStream<Uint8Array | string>): ReadableStream<Uint8Array> =>
+  stream.pipeThrough(
+    new TransformStream<Uint8Array | string, Uint8Array>({
+      transform(chunk, controller) {
+        controller.enqueue(toBytes(chunk))
+      },
+    }),
+  )
+
+// Pull-based bridge so backpressure is honored (pull fires only as the consumer
+// drains) and a client disconnect cancels the source iterator (e.g. aborts the
+// upstream LLM request).
+const iterableToStream = (iterable: AsyncIterable<Uint8Array | string>): ReadableStream<Uint8Array> => {
+  const iterator = iterable[Symbol.asyncIterator]()
+  return new ReadableStream<Uint8Array>({
+    async pull(controller) {
+      try {
+        const { value, done } = await iterator.next()
+        if (done) {
+          controller.close()
+          return
+        }
+        controller.enqueue(toBytes(value))
+      } catch (error) {
+        controller.error(error)
+      }
+    },
+    async cancel(reason) {
+      await iterator.return?.(reason)
+    },
+  })
+}
+
+const toStreamResponse = (out: StreamSource, init?: ResponseInit): Response => {
+  if (isResponse(out)) {
+    return out
+  }
+  const body = isReadableStream(out)
+    ? encodeStream(out)
+    : isAsyncIterable(out)
+      ? iterableToStream(out)
+      : null
+  if (body === null) {
+    throw new Error('pipeway: stream handler must return a Response, ReadableStream, or AsyncIterable')
+  }
+  const headers = new Headers(STREAM_DEFAULT_HEADERS)
+  if (init?.headers) {
+    new Headers(init.headers).forEach((v, k) => headers.set(k, v))
+  }
+  return new Response(body, { ...init, headers })
+}
 
 type AnyFn = (...args: never[]) => unknown
 
@@ -90,6 +167,9 @@ const build = <Params, Ctx extends BaseCtx<Params>, E>(internals: Internals<E>):
     },
     json<T>(handler: Handler<Ctx, T | Result<T, E>>, status = 200): CompiledHandler<Params> {
       return compile<Params, Ctx, E, T>(internals, handler, status)
+    },
+    stream(handler: StreamHandler<Ctx>, init?: ResponseInit): CompiledHandler<Params> {
+      return compileStream<Params, Ctx, E>(internals, handler, init)
     },
   } satisfies Record<string, AnyFn> as unknown as Pipeline<Params, Ctx, E>
 }
@@ -158,6 +238,56 @@ const compile = <Params, Ctx, E, T>(
       }
 
       response = await applySerializers(response)
+      for (const t of transforms) {
+        response = await t(response, ctx)
+      }
+      return response
+    } catch (error) {
+      for (const catcher of catchers) {
+        const handled = catcher(error, req)
+        if (handled) {
+          return handled
+        }
+      }
+      if (options.onError) {
+        return options.onError(error, req)
+      }
+      throw error
+    }
+  }
+}
+
+// Streaming terminator. Same step/map/catch lifecycle as `compile`, but the
+// handler yields a body source instead of a value: serializers never run (they
+// would buffer the stream), and there is no Result/JSON branch. `transform` still
+// runs (headers/logging); a transform must not read the body. Errors thrown before
+// the first chunk go through catchers/onError; once streaming starts, failures live
+// inside the stream and pipeway can no longer convert them.
+const compileStream = <Params, Ctx, E>(
+  internals: Internals<E>,
+  handler: StreamHandler<Ctx>,
+  init?: ResponseInit,
+): CompiledHandler<Params> => {
+  const { steps, maps, transforms, catchers, options } = internals
+
+  return async (req: Request, params: Params): Promise<Response> => {
+    try {
+      let ctx: Record<string, unknown> = { req, params }
+
+      for (const step of steps) {
+        const result = await step(ctx)
+        if (!result.ok) {
+          return result.response
+        }
+        ctx = { ...ctx, ...(result.extra as Record<string, unknown>) }
+      }
+
+      for (const m of maps) {
+        ctx = (await m(ctx)) as Record<string, unknown>
+      }
+
+      const out = await handler(ctx as unknown as Ctx)
+      let response = toStreamResponse(out, init)
       for (const t of transforms) {
         response = await t(response, ctx)
       }

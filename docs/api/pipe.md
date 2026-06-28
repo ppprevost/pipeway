@@ -203,6 +203,83 @@ const createTodo = pipe()
   .json(({ params }) => ({ id: crypto.randomUUID() }), 201) // → 201 Created
 ```
 
+## `.stream(handler, init?)` {#stream}
+
+```ts
+stream(
+  handler: (ctx: Ctx) => StreamSource | Promise<StreamSource>,
+  init?: ResponseInit,
+): CompiledHandler<Params>
+
+type StreamSource =
+  | Response
+  | ReadableStream<Uint8Array | string>
+  | AsyncIterable<Uint8Array | string>
+```
+
+Terminates the pipeline with a **streamed body**. Steps still run first, so an
+auth/rate-limit failure short-circuits with its own `Response` **before any chunk
+is sent**. The handler returns a body source rather than a value:
+
+| Return | Result |
+|---|---|
+| a `Response` | passed through verbatim, keeping its own headers |
+| a `ReadableStream` | wrapped in a `Response`; string chunks are UTF-8 encoded |
+| an `AsyncIterable` | bridged to a `ReadableStream` with backpressure + cancel |
+
+`init` overrides the default headers (used only for a raw stream/iterable — a
+returned `Response` keeps its own). The defaults are SSE-flavored but generic:
+
+```
+content-type: text/event-stream; charset=utf-8
+cache-control: no-cache, no-transform
+connection:    keep-alive
+```
+
+The handler **cannot return a `Result`** — the type forbids it. Wrapping a stream
+in `success(...)` would JSON-serialize the stream object and corrupt the body;
+`.stream()` makes that a compile error instead of a silent bug.
+
+`serialize()` never runs on a stream (it would buffer it). `transform()` still runs
+(headers, logging) — but a transform must not read the body. `catch()`/`onError`
+only see a throw raised **before** the first chunk; once streaming starts, a failure
+lives inside the stream and pipeway can no longer convert it.
+
+```ts
+import { pipe } from 'pipeway'
+import Anthropic from '@anthropic-ai/sdk'
+
+const anthropic = new Anthropic()
+
+// Stream an LLM provider's tokens as SSE — no Vercel AI SDK needed.
+const chat = pipe()
+  .use(session())
+  .stream(async ({ req }) => {
+    const { messages } = await req.json()
+    const stream = anthropic.messages.stream({
+      model: 'claude-opus-4-8',
+      max_tokens: 1024,
+      messages,
+    })
+    // anthropic stream is an AsyncIterable of events; map to SSE lines.
+    async function* sse() {
+      for await (const event of stream) {
+        if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
+          yield `data: ${JSON.stringify(event.delta.text)}\n\n`
+        }
+      }
+      yield 'data: [DONE]\n\n'
+    }
+    return sse()
+  })
+
+// Already have a framework Response (e.g. Vercel AI SDK)? Return it directly —
+// it passes through with its own headers.
+const aiChat = pipe()
+  .use(session())
+  .stream(({ req }) => streamText({ model, messages }).toUIMessageStreamResponse())
+```
+
 ## `ok()` / `fail()` {#ok-fail}
 
 The only way to build a [`StepResult`](#type-stepresult).
@@ -271,6 +348,20 @@ type PipeOptions<E = never> = {
 ```ts
 type Handler<Ctx, T> = (ctx: Ctx) => T | Response | Promise<T | Response>
 ```
+
+### `StreamSource` / `StreamHandler<Ctx>` {#type-stream}
+
+```ts
+type StreamSource =
+  | Response
+  | ReadableStream<Uint8Array | string>
+  | AsyncIterable<Uint8Array | string>
+
+type StreamHandler<Ctx> = (ctx: Ctx) => StreamSource | Promise<StreamSource>
+```
+
+What [`.stream()`](#stream) accepts. Notably **not** a `Result` — that exclusion is
+deliberate (see `.stream()`).
 
 ### `CompiledHandler<Params>` {#type-compiledhandler}
 
