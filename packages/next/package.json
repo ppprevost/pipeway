@@ -1,6 +1,6 @@
 {
   "name": "pipeway-next",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "A typed pipeline for Next.js server actions — compile-time step ordering, Result-first ActionResult, Standard Schema input validation.",
   "keywords": [
     "pipeway",
