@@ -155,6 +155,48 @@ accidentally write `.stream(() => success(result.toUIMessageStreamResponse()))` 
 that would JSON-serialize the `Response` object and silently break the body.
 :::
 
+## Server — LangChain
+
+LangChain's `.stream()` and `.streamEvents()` return `AsyncIterable`s, so they drop
+straight into `.stream()`. One catch: LangChain yields **objects**
+(`AIMessageChunk`), not strings — map to the text yourself or pipeway will encode
+`[object Object]`.
+
+```ts
+import { ChatAnthropic } from '@langchain/anthropic'
+
+const model = new ChatAnthropic({ model: 'claude-opus-4-8' })
+
+export const POST = pipe()
+  .use(session())
+  .stream(async ({ req }) => {
+    const { messages } = await req.json()
+    const stream = await model.stream(messages) // AsyncIterable<AIMessageChunk>
+    async function* sse() {
+      for await (const chunk of stream) {
+        if (chunk.content) yield `data: ${JSON.stringify(chunk.content)}\n\n`
+      }
+      yield 'data: [DONE]\n\n'
+    }
+    return sse()
+  })
+```
+
+An LCEL chain ending in a `StringOutputParser` already yields **strings**, so you
+can return the stream directly — just override the content type:
+
+```ts
+.stream(
+  async ({ req }) => chain.stream(await req.json()), // AsyncIterable<string>
+  { headers: { 'content-type': 'text/plain; charset=utf-8' } },
+)
+```
+
+`.streamEvents({ version: 'v2' })` gives token + tool-call + chain-step events;
+filter for the one you want and frame it the same way. In every case, a client
+disconnect cancels the iterator, which propagates the abort into LangChain and
+stops the upstream model — no wasted tokens.
+
 ## Client — Vercel AI SDK in React
 
 On the client, the Vercel AI SDK's `useChat` consumes the SSE stream and exposes
