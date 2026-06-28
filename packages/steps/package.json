@@ -1,6 +1,6 @@
 {
   "name": "pipeway-steps",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Generic validation steps for pipeway (body, query) — Standard Schema: works with Zod, Valibot, ArkType.",
   "keywords": [
     "pipeway",

@@ -1,5 +1,13 @@
 # pipeway-adapter-node
 
+## 1.0.2
+
+### Patch Changes
+
+- Updated dependencies [9739924]
+- Updated dependencies [506957e]
+  - pipeway@0.3.0
+
 ## 1.0.1
 
 ### Patch Changes
