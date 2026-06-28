@@ -91,8 +91,8 @@ describe('action', () => {
     if (!res.ok) expect(res.error).toBe('InternalError')
   })
 
-  it('calls onError with the error and meta before masking', async () => {
-    const seen: Array<{ error: unknown; name?: string }> = []
+  it('calls onError with the error and meta, masks without leaking the message', async () => {
+    const seen: Array<{ error: unknown; name: string | undefined }> = []
     const run = action({ onError: (error, meta) => seen.push({ error, name: meta.name }) })
       .meta({ name: 'createTodo' })
       .handle(() => {
@@ -100,10 +100,12 @@ describe('action', () => {
       })
 
     const res = await run()
-    expect(res).toEqual({ ok: false, error: 'InternalError', meta: 'boom' })
+    // The raw message never reaches the client — only the masked error.
+    expect(res).toEqual({ ok: false, error: 'InternalError' })
     expect(seen).toHaveLength(1)
-    expect((seen[0].error as Error).message).toBe('boom')
-    expect(seen[0].name).toBe('createTodo')
+    const first = seen[0]
+    expect((first?.error as Error).message).toBe('boom')
+    expect(first?.name).toBe('createTodo')
   })
 
   it('lets onError re-throw (control-flow) escape the action', async () => {

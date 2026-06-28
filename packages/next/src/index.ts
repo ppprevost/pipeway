@@ -129,9 +129,10 @@ const build = <Input, Ctx extends BaseCtx<Input>, E>(
         return { ok: true, data: out as T }
       } catch (error) {
         // onError may re-throw (e.g. unstable_rethrow for redirect/notFound) — let
-        // that escape so framework control-flow keeps working; otherwise report + mask.
+        // that escape so framework control-flow keeps working. Otherwise the raw
+        // error never reaches the client (no message leak); inspect it in onError.
         options.onError?.(error, actionMeta)
-        return { ok: false, error: 'InternalError', meta: error instanceof Error ? error.message : String(error) }
+        return { ok: false, error: 'InternalError' }
       }
     }
   },
